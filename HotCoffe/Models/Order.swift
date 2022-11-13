@@ -8,6 +8,7 @@
 import Foundation
 
 
+
 struct Order : Codable {
    
     let name: String
@@ -30,6 +31,40 @@ enum CoffeSize : String, Codable, CaseIterable {
 }
 
 
+extension Order {
+    
+    static var all: Resource<[Order]> = {
+        
+        guard let url = URL(string: "https://warp-wiry-rugby.glitch.me/orders") else {
+            fatalError("URL is not correct")
+            
+        }
+        
+        return Resource<[Order]>(url: url)
+    }()
+    
+    static func create(vm: AddCoffeOrderViewModel) -> Resource<Order?> {
+        
+        
+        let order = Order(vm)
+        
+        guard let url = URL(string: "https://warp-wiry-rugby.glitch.me/orders") else {
+            fatalError("URL is not correct")
+        }
+        
+        guard let data = try? JSONEncoder().encode(order) else {
+            fatalError("Error encoding order! ")
+        }
+            
+            var resource = Resource<Order?>(url: url)
+            resource.httpMethod = HttpMethod.post
+            resource.body = data
+            
+            
+        return resource
+    }
+    
+}
 extension Order {
     init?(_ vm : AddCoffeOrderViewModel){
         guard let name = vm.name,

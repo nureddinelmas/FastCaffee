@@ -8,7 +8,24 @@
 import Foundation
 import UIKit
 
-class OrdersTableViewController : UITableViewController{
+class OrdersTableViewController : UITableViewController, AddCoffeOrderDelegate{
+    
+    // Add delegate functions of AddCoffeOrderDelegate
+    
+    func addCoffeeOrderViewControllerDidSave(order: Order, controller: UIViewController) {
+        controller.dismiss(animated: true)
+        
+        let orderVM = OrderViewModel(order: order)
+        self.orderListViewModel.orderViewModel.append(orderVM)
+        self.tableView.insertRows(at: [IndexPath.init(row: self.orderListViewModel.orderViewModel.count - 1, section: 0)], with: .automatic)
+    }
+    
+    func addCoffeOrderViewControllerDidClose(controller: UIViewController) {
+        controller.dismiss(animated: true,completion: nil)
+    }
+    
+    
+    
     var orderListViewModel = OrderListViewModel()
     
     override func viewDidLoad() {
@@ -18,15 +35,15 @@ class OrdersTableViewController : UITableViewController{
     
     
     private func populateOrders () {
-        
+        /*
         guard let coffeUrl = URL(string: "https://warp-wiry-rugby.glitch.me/orders") else {
             fatalError("The Url has not exist")
             return
         }
+        */
+       //  let resource = Resource<[Order]>(url: coffeUrl)
         
-        let resource = Resource<[Order]>(url: coffeUrl)
-        
-        Webservice().load(resource: resource) { [weak self] result in
+        Webservice().load(resource: Order.all) { [weak self] result in
             
             switch result {
             case .success(let orders):
@@ -41,6 +58,14 @@ class OrdersTableViewController : UITableViewController{
             
         }
         
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        guard let navC = segue.destination as? UINavigationController, let addCoffeOrderVC = navC.viewControllers.first as? AddNewOrderViewController else {
+            fatalError("Error performing segue ! ")
+        }
+        
+        addCoffeOrderVC.delegate = self
     }
 
     override func numberOfSections(in tableView: UITableView) -> Int {
